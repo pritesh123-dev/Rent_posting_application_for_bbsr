@@ -1,0 +1,36 @@
+## What changed and why
+
+### Root cause
+The system has Java 25 (Homebrew) installed, but Lombok 1.18.30/1.18.34/1.18.36 all crash on Java 25 with:
+  `ExceptionInInitializerError: com.sun.tools.javac.code.TypeTag :: UNKNOWN`
+
+Lombok uses internal javac APIs (com.sun.tools.javac) which changed in Java 25 in an incompatible way. No released version of Lombok supports Java 25 as of April 2026.
+
+### Secondary issues found
+1. Room.java had a leading whitespace on the `package` declaration (5 spaces before "package") — corrupted the compilation unit.
+2. pom.xml had a duplicate Lombok dependency (once with explicit version 1.18.30 + provided scope, once managed by Spring Boot parent) — caused a Maven warning and could cause AP resolution issues.
+
+### What was fixed
+
+#### Room.java
+- Removed all Lombok annotations (@Getter, @Setter, @NoArgsConstructor, @AllArgsConstructor, @Builder, @Entity stays)
+- Added explicit: no-arg constructor, all-args constructor, getters, setters, static builder() method, inner Builder class
+
+#### RoomRequestDTO.java
+- Removed @Data from Lombok
+- Added explicit getters and setters for all fields
+
+#### RoomResponseDTO.java
+- Removed @Data, @Builder, @NoArgsConstructor, @AllArgsConstructor from Lombok
+- Added explicit: no-arg constructor, all-args constructor, getters, setters, static builder() method, inner Builder class
+
+#### ApiResponse.java
+- Removed @Data, @AllArgsConstructor from Lombok
+- Added explicit constructor and getters
+- Used explicit `new ApiResponse<T>(...)` type witness in all static factory methods to avoid diamond inference issues
+
+#### pom.xml
+- Removed duplicate Lombok dependency (was declared twice)
+- Removed Lombok dependency entirely (no longer needed since all Lombok annotations are gone)
+- Removed maven-compiler-plugin annotationProcessorPaths for Lombok
+- Cleaned up spring-boot-maven-plugin to remove the now-unnecessary Lombok exclusion config
