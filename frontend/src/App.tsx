@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import PostRoomPage from './pages/PostRoomPage';
 import FindRoomPage from './pages/FindRoomPage';
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }

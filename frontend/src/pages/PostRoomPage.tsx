@@ -57,18 +57,14 @@ export default function PostRoomPage() {
     try {
       const created: any = await dispatch(
         createRoom({
-          name: form.name,
-          phone: form.phone,
-          rent: +form.rent,
-          city: form.city,
-          latitude: +form.latitude,
-          longitude: +form.longitude,
+          name: form.name, phone: form.phone, rent: +form.rent, city: form.city,
+          latitude: +form.latitude, longitude: +form.longitude,
           isAvailable: form.isAvailable,
           description: form.description || undefined,
           imageUrl: form.imageUrl || undefined,
         }),
       ).unwrap();
-      toast.success('Room posted!');
+      toast.success('Room posted successfully!');
       nav(`/rooms/${created.id}`);
     } catch (e: any) {
       toast.error(e?.message || 'Failed to post');
@@ -77,62 +73,78 @@ export default function PostRoomPage() {
     }
   };
 
-  const input = 'w-full border dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-900';
-
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Post Your Room</h1>
-      <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-4
-                                         bg-white dark:bg-gray-900 p-5 rounded-lg shadow border dark:border-gray-800">
-        <div>
-          <label className="text-sm">Owner Name *</label>
-          <input className={input} value={form.name} onChange={(e) => set('name', e.target.value)} />
-        </div>
-        <div>
-          <label className="text-sm">Phone *</label>
-          <input className={input} value={form.phone} onChange={(e) => set('phone', e.target.value)} />
-        </div>
-        <div>
-          <label className="text-sm">Rent (₹/month) *</label>
-          <input type="number" className={input} value={form.rent} onChange={(e) => set('rent', e.target.value)} />
-        </div>
-        <div>
-          <label className="text-sm">City *</label>
-          <input className={input} value={form.city} onChange={(e) => set('city', e.target.value)} />
-        </div>
-        <div className="md:col-span-2 flex items-end gap-2">
-          <div className="flex-1">
-            <label className="text-sm">Latitude *</label>
-            <input className={input} value={form.latitude} onChange={(e) => set('latitude', e.target.value)} />
-          </div>
-          <div className="flex-1">
-            <label className="text-sm">Longitude *</label>
-            <input className={input} value={form.longitude} onChange={(e) => set('longitude', e.target.value)} />
-          </div>
-          <button type="button" onClick={useLocation}
-                  className="bg-brand-500 text-white px-4 py-2 rounded hover:bg-brand-600">
-            📍 Use My Location
-          </button>
-        </div>
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Post your room</h1>
+        <p className="text-gray-500 text-sm mt-1">
+          Free listing — first 2000 posts are on the house 🎁
+        </p>
+      </div>
+
+      <form onSubmit={submit} className="card p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Field label="Owner Name *">
+          <input className="input" value={form.name} onChange={(e) => set('name', e.target.value)} />
+        </Field>
+        <Field label="Phone *">
+          <input className="input" value={form.phone} onChange={(e) => set('phone', e.target.value)}
+                 placeholder="+91 9876543210" />
+        </Field>
+        <Field label="Rent (₹/month) *">
+          <input type="number" className="input" value={form.rent}
+                 onChange={(e) => set('rent', e.target.value)} />
+        </Field>
+        <Field label="City *">
+          <input className="input" value={form.city}
+                 onChange={(e) => set('city', e.target.value)} />
+        </Field>
+
         <div className="md:col-span-2">
-          <label className="text-sm">Description</label>
-          <textarea className={input} rows={3} value={form.description}
-                    onChange={(e) => set('description', e.target.value)} />
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location *</label>
+          <div className="flex flex-col sm:flex-row gap-2 mt-1">
+            <input className="input" placeholder="Latitude" value={form.latitude}
+                   onChange={(e) => set('latitude', e.target.value)} />
+            <input className="input" placeholder="Longitude" value={form.longitude}
+                   onChange={(e) => set('longitude', e.target.value)} />
+            <button type="button" onClick={useLocation}
+                    className="btn-primary px-4 py-2 whitespace-nowrap">
+              📍 Use my location
+            </button>
+          </div>
         </div>
-        <div className="md:col-span-2">
-          <label className="text-sm">Image URL</label>
-          <input className={input} value={form.imageUrl} onChange={(e) => set('imageUrl', e.target.value)} />
-        </div>
+
+        <Field label="Description" className="md:col-span-2">
+          <textarea className="input" rows={3} value={form.description}
+                    onChange={(e) => set('description', e.target.value)}
+                    placeholder="Describe the room, amenities, neighborhood…" />
+        </Field>
+
+        <Field label="Image URL (optional)" className="md:col-span-2">
+          <input className="input" value={form.imageUrl}
+                 onChange={(e) => set('imageUrl', e.target.value)}
+                 placeholder="https://…" />
+        </Field>
+
         <label className="flex items-center gap-2 md:col-span-2">
-          <input type="checkbox" checked={form.isAvailable}
+          <input type="checkbox" checked={form.isAvailable} className="accent-brand-500"
                  onChange={(e) => set('isAvailable', e.target.checked)} />
-          Available for rent
+          <span className="text-sm">Mark as currently available</span>
         </label>
+
         <button type="submit" disabled={submitting}
-                className="md:col-span-2 bg-brand-600 text-white py-3 rounded font-semibold disabled:opacity-60">
-          {submitting ? 'Posting…' : 'Post Room'}
+                className="md:col-span-2 btn-primary py-3 text-base disabled:opacity-60">
+          {submitting ? 'Posting…' : '🚀 Post Room'}
         </button>
       </form>
+    </div>
+  );
+}
+
+function Field({ label, className = '', children }: { label: string; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={className}>
+      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <div className="mt-1">{children}</div>
     </div>
   );
 }
