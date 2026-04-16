@@ -23,15 +23,12 @@ public class RoomController {
 
     private final RoomService service;
 
-    public RoomController(RoomService service) {
-        this.service = service;
-    }
+    public RoomController(RoomService service) { this.service = service; }
 
     @PostMapping
     public ResponseEntity<ApiResponse<RoomResponseDTO>> create(@Valid @RequestBody RoomRequestDTO dto) {
-        RoomResponseDTO saved = service.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Room posted successfully", saved));
+                .body(ApiResponse.ok("Room posted successfully", service.create(dto)));
     }
 
     @GetMapping
@@ -40,24 +37,27 @@ public class RoomController {
             @RequestParam(required = false) Double minRent,
             @RequestParam(required = false) Double maxRent,
             @RequestParam(required = false) Boolean available,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) String furnishing,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
-
         String[] sp = sort.split(",");
         Sort s = Sort.by(sp.length > 1 && "asc".equalsIgnoreCase(sp[1])
                 ? Sort.Direction.ASC : Sort.Direction.DESC, sp[0]);
-        return ApiResponse.ok(service.list(city, minRent, maxRent, available, PageRequest.of(page, size, s)));
+        return ApiResponse.ok(service.list(city, minRent, maxRent, available, roomType, furnishing,
+                PageRequest.of(page, size, s)));
     }
 
     @GetMapping("/nearby")
     public ApiResponse<List<RoomResponseDTO>> nearby(
-            @RequestParam double lat,
-            @RequestParam double lng,
-            @RequestParam(defaultValue = "5") double radiusKm,
+            @RequestParam double lat, @RequestParam double lng,
+            @RequestParam(defaultValue = "10") double radiusKm,
             @RequestParam(required = false) Double maxRent,
-            @RequestParam(required = false) Boolean available) {
-        return ApiResponse.ok(service.findNearby(lat, lng, radiusKm, maxRent, available));
+            @RequestParam(required = false) Boolean available,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) String furnishing) {
+        return ApiResponse.ok(service.findNearby(lat, lng, radiusKm, maxRent, available, roomType, furnishing));
     }
 
     @GetMapping("/{id}")
@@ -67,10 +67,8 @@ public class RoomController {
 
     @PatchMapping("/{id}/availability")
     public ApiResponse<RoomResponseDTO> updateAvailability(
-            @PathVariable UUID id,
-            @RequestBody Map<String, Boolean> body) {
-        boolean available = Boolean.TRUE.equals(body.get("isAvailable"));
-        return ApiResponse.ok(service.updateAvailability(id, available));
+            @PathVariable UUID id, @RequestBody Map<String, Boolean> body) {
+        return ApiResponse.ok(service.updateAvailability(id, Boolean.TRUE.equals(body.get("isAvailable"))));
     }
 
     @GetMapping("/stats")

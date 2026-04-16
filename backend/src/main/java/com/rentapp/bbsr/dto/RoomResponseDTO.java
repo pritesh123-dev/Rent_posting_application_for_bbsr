@@ -9,9 +9,14 @@ public class RoomResponseDTO {
     private String phone;
     private Double rent;
     private String city;
+    private String area;
     private Double latitude;
     private Double longitude;
     private Boolean isAvailable;
+    private String roomType;
+    private String furnishing;
+    private String amenities;
+    private Boolean verified;
     private String description;
     private String imageUrl;
     private Instant createdAt;
@@ -19,80 +24,62 @@ public class RoomResponseDTO {
 
     public RoomResponseDTO() {}
 
-    public RoomResponseDTO(UUID id, String name, String phone, Double rent, String city,
-                           Double latitude, Double longitude, Boolean isAvailable,
-                           String description, String imageUrl, Instant createdAt, Double distanceKm) {
-        this.id = id;
-        this.name = name;
-        this.phone = phone;
-        this.rent = rent;
-        this.city = city;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.isAvailable = isAvailable;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.createdAt = createdAt;
-        this.distanceKm = distanceKm;
-    }
-
     public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public void setId(UUID v) { id = v; }
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setName(String v) { name = v; }
     public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public void setPhone(String v) { phone = v; }
     public Double getRent() { return rent; }
-    public void setRent(Double rent) { this.rent = rent; }
+    public void setRent(Double v) { rent = v; }
     public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
+    public void setCity(String v) { city = v; }
+    public String getArea() { return area; }
+    public void setArea(String v) { area = v; }
     public Double getLatitude() { return latitude; }
-    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public void setLatitude(Double v) { latitude = v; }
     public Double getLongitude() { return longitude; }
-    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    public void setLongitude(Double v) { longitude = v; }
     public Boolean getIsAvailable() { return isAvailable; }
-    public void setIsAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; }
+    public void setIsAvailable(Boolean v) { isAvailable = v; }
+    public String getRoomType() { return roomType; }
+    public void setRoomType(String v) { roomType = v; }
+    public String getFurnishing() { return furnishing; }
+    public void setFurnishing(String v) { furnishing = v; }
+    public String getAmenities() { return amenities; }
+    public void setAmenities(String v) { amenities = v; }
+    public Boolean getVerified() { return verified; }
+    public void setVerified(Boolean v) { verified = v; }
     public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(String v) { description = v; }
     public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setImageUrl(String v) { imageUrl = v; }
     public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public void setCreatedAt(Instant v) { createdAt = v; }
     public Double getDistanceKm() { return distanceKm; }
-    public void setDistanceKm(Double distanceKm) { this.distanceKm = distanceKm; }
+    public void setDistanceKm(Double v) { distanceKm = v; }
 
     public static Builder builder() { return new Builder(); }
 
     public static class Builder {
-        private UUID id;
-        private String name;
-        private String phone;
-        private Double rent;
-        private String city;
-        private Double latitude;
-        private Double longitude;
-        private Boolean isAvailable;
-        private String description;
-        private String imageUrl;
-        private Instant createdAt;
-        private Double distanceKm;
-
-        public Builder id(UUID id) { this.id = id; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public Builder phone(String phone) { this.phone = phone; return this; }
-        public Builder rent(Double rent) { this.rent = rent; return this; }
-        public Builder city(String city) { this.city = city; return this; }
-        public Builder latitude(Double latitude) { this.latitude = latitude; return this; }
-        public Builder longitude(Double longitude) { this.longitude = longitude; return this; }
-        public Builder isAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; return this; }
-        public Builder description(String description) { this.description = description; return this; }
-        public Builder imageUrl(String imageUrl) { this.imageUrl = imageUrl; return this; }
-        public Builder createdAt(Instant createdAt) { this.createdAt = createdAt; return this; }
-        public Builder distanceKm(Double distanceKm) { this.distanceKm = distanceKm; return this; }
-
-        public RoomResponseDTO build() {
-            return new RoomResponseDTO(id, name, phone, rent, city, latitude, longitude,
-                    isAvailable, description, imageUrl, createdAt, distanceKm);
-        }
+        private final RoomResponseDTO d = new RoomResponseDTO();
+        public Builder id(UUID v) { d.id = v; return this; }
+        public Builder name(String v) { d.name = v; return this; }
+        public Builder phone(String v) { d.phone = v; return this; }
+        public Builder rent(Double v) { d.rent = v; return this; }
+        public Builder city(String v) { d.city = v; return this; }
+        public Builder area(String v) { d.area = v; return this; }
+        public Builder latitude(Double v) { d.latitude = v; return this; }
+        public Builder longitude(Double v) { d.longitude = v; return this; }
+        public Builder isAvailable(Boolean v) { d.isAvailable = v; return this; }
+        public Builder roomType(String v) { d.roomType = v; return this; }
+        public Builder furnishing(String v) { d.furnishing = v; return this; }
+        public Builder amenities(String v) { d.amenities = v; return this; }
+        public Builder verified(Boolean v) { d.verified = v; return this; }
+        public Builder description(String v) { d.description = v; return this; }
+        public Builder imageUrl(String v) { d.imageUrl = v; return this; }
+        public Builder createdAt(Instant v) { d.createdAt = v; return this; }
+        public Builder distanceKm(Double v) { d.distanceKm = v; return this; }
+        public RoomResponseDTO build() { return d; }
     }
 }

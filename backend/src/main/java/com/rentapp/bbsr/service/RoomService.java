@@ -11,8 +11,10 @@ import java.util.UUID;
 public interface RoomService {
     RoomResponseDTO create(RoomRequestDTO dto);
     RoomResponseDTO get(UUID id);
-    Page<RoomResponseDTO> list(String city, Double minRent, Double maxRent, Boolean available, Pageable pageable);
-    List<RoomResponseDTO> findNearby(double lat, double lng, double radiusKm, Double maxRent, Boolean available);
+    Page<RoomResponseDTO> list(String city, Double minRent, Double maxRent, Boolean available,
+                                String roomType, String furnishing, Pageable pageable);
+    List<RoomResponseDTO> findNearby(double lat, double lng, double radiusKm,
+                                      Double maxRent, Boolean available, String roomType, String furnishing);
     RoomResponseDTO updateAvailability(UUID id, boolean available);
     long totalListings();
 }

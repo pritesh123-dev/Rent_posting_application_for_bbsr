@@ -10,7 +10,9 @@ import java.util.UUID;
     indexes = {
         @Index(name = "idx_room_city", columnList = "city"),
         @Index(name = "idx_room_lat_lng", columnList = "latitude, longitude"),
-        @Index(name = "idx_room_available", columnList = "is_available")
+        @Index(name = "idx_room_available", columnList = "is_available"),
+        @Index(name = "idx_room_type", columnList = "room_type"),
+        @Index(name = "idx_room_rent", columnList = "rent")
     }
 )
 public class Room {
@@ -31,6 +33,9 @@ public class Room {
     @Column(nullable = false, length = 80)
     private String city;
 
+    @Column(length = 100)
+    private String area;
+
     @Column(nullable = false)
     private Double latitude;
 
@@ -39,6 +44,18 @@ public class Room {
 
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable;
+
+    @Column(name = "room_type", length = 20)
+    private String roomType;
+
+    @Column(length = 20)
+    private String furnishing;
+
+    @Column(length = 500)
+    private String amenities;
+
+    @Column
+    private Boolean verified;
 
     @Column(length = 2000)
     private String description;
@@ -51,28 +68,14 @@ public class Room {
 
     public Room() {}
 
-    public Room(UUID id, String name, String phone, Double rent, String city,
-                Double latitude, Double longitude, Boolean isAvailable,
-                String description, String imageUrl, Instant createdAt) {
-        this.id = id;
-        this.name = name;
-        this.phone = phone;
-        this.rent = rent;
-        this.city = city;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.isAvailable = isAvailable;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.createdAt = createdAt;
-    }
-
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = Instant.now();
         if (isAvailable == null) isAvailable = true;
+        if (verified == null) verified = false;
     }
 
+    // Getters & setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
     public String getName() { return name; }
@@ -83,12 +86,22 @@ public class Room {
     public void setRent(Double rent) { this.rent = rent; }
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+    public String getArea() { return area; }
+    public void setArea(String area) { this.area = area; }
     public Double getLatitude() { return latitude; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
     public Boolean getIsAvailable() { return isAvailable; }
     public void setIsAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; }
+    public String getRoomType() { return roomType; }
+    public void setRoomType(String roomType) { this.roomType = roomType; }
+    public String getFurnishing() { return furnishing; }
+    public void setFurnishing(String furnishing) { this.furnishing = furnishing; }
+    public String getAmenities() { return amenities; }
+    public void setAmenities(String amenities) { this.amenities = amenities; }
+    public Boolean getVerified() { return verified; }
+    public void setVerified(Boolean verified) { this.verified = verified; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public String getImageUrl() { return imageUrl; }
@@ -99,33 +112,21 @@ public class Room {
     public static Builder builder() { return new Builder(); }
 
     public static class Builder {
-        private UUID id;
-        private String name;
-        private String phone;
-        private Double rent;
-        private String city;
-        private Double latitude;
-        private Double longitude;
-        private Boolean isAvailable;
-        private String description;
-        private String imageUrl;
-        private Instant createdAt;
-
-        public Builder id(UUID id) { this.id = id; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public Builder phone(String phone) { this.phone = phone; return this; }
-        public Builder rent(Double rent) { this.rent = rent; return this; }
-        public Builder city(String city) { this.city = city; return this; }
-        public Builder latitude(Double latitude) { this.latitude = latitude; return this; }
-        public Builder longitude(Double longitude) { this.longitude = longitude; return this; }
-        public Builder isAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; return this; }
-        public Builder description(String description) { this.description = description; return this; }
-        public Builder imageUrl(String imageUrl) { this.imageUrl = imageUrl; return this; }
-        public Builder createdAt(Instant createdAt) { this.createdAt = createdAt; return this; }
-
-        public Room build() {
-            return new Room(id, name, phone, rent, city, latitude, longitude,
-                    isAvailable, description, imageUrl, createdAt);
-        }
+        private final Room r = new Room();
+        public Builder name(String v) { r.name = v; return this; }
+        public Builder phone(String v) { r.phone = v; return this; }
+        public Builder rent(Double v) { r.rent = v; return this; }
+        public Builder city(String v) { r.city = v; return this; }
+        public Builder area(String v) { r.area = v; return this; }
+        public Builder latitude(Double v) { r.latitude = v; return this; }
+        public Builder longitude(Double v) { r.longitude = v; return this; }
+        public Builder isAvailable(Boolean v) { r.isAvailable = v; return this; }
+        public Builder roomType(String v) { r.roomType = v; return this; }
+        public Builder furnishing(String v) { r.furnishing = v; return this; }
+        public Builder amenities(String v) { r.amenities = v; return this; }
+        public Builder verified(Boolean v) { r.verified = v; return this; }
+        public Builder description(String v) { r.description = v; return this; }
+        public Builder imageUrl(String v) { r.imageUrl = v; return this; }
+        public Room build() { return r; }
     }
 }

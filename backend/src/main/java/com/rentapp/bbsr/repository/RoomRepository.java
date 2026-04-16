@@ -19,15 +19,18 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
           AND (:minRent IS NULL OR r.rent >= :minRent)
           AND (:maxRent IS NULL OR r.rent <= :maxRent)
           AND (:available IS NULL OR r.isAvailable = :available)
+          AND (:roomType IS NULL OR r.roomType = :roomType)
+          AND (:furnishing IS NULL OR r.furnishing = :furnishing)
           AND (:minLat IS NULL OR r.latitude BETWEEN :minLat AND :maxLat)
           AND (:minLng IS NULL OR r.longitude BETWEEN :minLng AND :maxLng)
-        ORDER BY r.createdAt DESC
     """)
     Page<Room> search(
         @Param("city") String city,
         @Param("minRent") Double minRent,
         @Param("maxRent") Double maxRent,
         @Param("available") Boolean available,
+        @Param("roomType") String roomType,
+        @Param("furnishing") String furnishing,
         @Param("minLat") Double minLat,
         @Param("maxLat") Double maxLat,
         @Param("minLng") Double minLng,

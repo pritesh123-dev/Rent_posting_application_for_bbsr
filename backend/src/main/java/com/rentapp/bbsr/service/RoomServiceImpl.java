@@ -35,21 +35,18 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     @CacheEvict(value = {"rooms", "nearby"}, allEntries = true)
     public RoomResponseDTO create(RoomRequestDTO dto) {
-        long count = repository.count();
-        if (count >= freeLimit) {
+        if (repository.count() >= freeLimit) {
             throw new ApiException(HttpStatus.PAYMENT_REQUIRED,
-                "Free listing limit (" + freeLimit + ") reached. Upgrade to post more.");
+                "Free listing limit (" + freeLimit + ") reached.");
         }
         Room room = Room.builder()
-                .name(dto.getName())
-                .phone(dto.getPhone())
-                .rent(dto.getRent())
-                .city(dto.getCity())
-                .latitude(dto.getLatitude())
-                .longitude(dto.getLongitude())
+                .name(dto.getName()).phone(dto.getPhone()).rent(dto.getRent())
+                .city(dto.getCity()).area(dto.getArea())
+                .latitude(dto.getLatitude()).longitude(dto.getLongitude())
                 .isAvailable(dto.getIsAvailable() == null ? Boolean.TRUE : dto.getIsAvailable())
-                .description(dto.getDescription())
-                .imageUrl(dto.getImageUrl())
+                .roomType(dto.getRoomType()).furnishing(dto.getFurnishing())
+                .amenities(dto.getAmenities())
+                .description(dto.getDescription()).imageUrl(dto.getImageUrl())
                 .build();
         return toDto(repository.save(room), null);
     }
@@ -64,28 +61,21 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "rooms", key = "T(java.util.Objects).hash(#city,#minRent,#maxRent,#available,#pageable.pageNumber,#pageable.pageSize)")
-    public Page<RoomResponseDTO> list(String city, Double minRent, Double maxRent, Boolean available, Pageable pageable) {
-        return repository.search(city, minRent, maxRent, available, null, null, null, null, pageable)
-                .map(r -> toDto(r, null));
+    public Page<RoomResponseDTO> list(String city, Double minRent, Double maxRent,
+                                       Boolean available, String roomType, String furnishing, Pageable pageable) {
+        return repository.search(city, minRent, maxRent, available, roomType, furnishing,
+                null, null, null, null, pageable).map(r -> toDto(r, null));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoomResponseDTO> findNearby(double lat, double lng, double radiusKm, Double maxRent, Boolean available) {
+    public List<RoomResponseDTO> findNearby(double lat, double lng, double radiusKm,
+                                             Double maxRent, Boolean available, String roomType, String furnishing) {
         double[] bb = DistanceCalculator.boundingBox(lat, lng, radiusKm);
-        // Pull bounding-box candidates via the DB index, then refine with Haversine in-memory.
-        var candidates = repository.search(
-                null, null, maxRent, available,
-                bb[0], bb[1], bb[2], bb[3],
-                Pageable.ofSize(500)
-        ).getContent();
-
+        var candidates = repository.search(null, null, maxRent, available, roomType, furnishing,
+                bb[0], bb[1], bb[2], bb[3], Pageable.ofSize(500)).getContent();
         return candidates.stream()
-                .map(r -> {
-                    double d = DistanceCalculator.haversineKm(lat, lng, r.getLatitude(), r.getLongitude());
-                    return toDto(r, d);
-                })
+                .map(r -> toDto(r, DistanceCalculator.haversineKm(lat, lng, r.getLatitude(), r.getLongitude())))
                 .filter(r -> r.getDistanceKm() <= radiusKm)
                 .sorted(Comparator.comparingDouble(RoomResponseDTO::getDistanceKm))
                 .toList();
@@ -102,24 +92,18 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public long totalListings() {
-        return repository.count();
-    }
+    public long totalListings() { return repository.count(); }
 
     private RoomResponseDTO toDto(Room r, Double distanceKm) {
         return RoomResponseDTO.builder()
-                .id(r.getId())
-                .name(r.getName())
-                .phone(r.getPhone())
-                .rent(r.getRent())
-                .city(r.getCity())
-                .latitude(r.getLatitude())
-                .longitude(r.getLongitude())
+                .id(r.getId()).name(r.getName()).phone(r.getPhone()).rent(r.getRent())
+                .city(r.getCity()).area(r.getArea())
+                .latitude(r.getLatitude()).longitude(r.getLongitude())
                 .isAvailable(r.getIsAvailable())
-                .description(r.getDescription())
-                .imageUrl(r.getImageUrl())
-                .createdAt(r.getCreatedAt())
-                .distanceKm(distanceKm)
+                .roomType(r.getRoomType()).furnishing(r.getFurnishing())
+                .amenities(r.getAmenities()).verified(r.getVerified())
+                .description(r.getDescription()).imageUrl(r.getImageUrl())
+                .createdAt(r.getCreatedAt()).distanceKm(distanceKm)
                 .build();
     }
 }

@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import PostRoomPage from './pages/PostRoomPage';
 import FindRoomPage from './pages/FindRoomPage';
 import RoomDetailsPage from './pages/RoomDetailsPage';
+import SavedPage from './pages/SavedPage';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/post" element={<PostRoomPage />} />
           <Route path="/find" element={<FindRoomPage />} />
           <Route path="/rooms/:id" element={<RoomDetailsPage />} />
+          <Route path="/saved" element={<SavedPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
