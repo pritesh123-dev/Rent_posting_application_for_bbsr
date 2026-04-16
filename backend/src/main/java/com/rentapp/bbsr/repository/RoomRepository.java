@@ -13,15 +13,15 @@ import java.util.UUID;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, UUID> {
 
-    // Bounding-box pre-filter keeps index usable; Haversine is applied on top.
     @Query("""
         SELECT r FROM Room r
-        WHERE (:city IS NULL OR LOWER(r.city) = LOWER(:city))
+        WHERE (:city IS NULL OR LOWER(CAST(r.city AS string)) LIKE LOWER(CAST(CONCAT('%', :city, '%') AS string)))
           AND (:minRent IS NULL OR r.rent >= :minRent)
           AND (:maxRent IS NULL OR r.rent <= :maxRent)
           AND (:available IS NULL OR r.isAvailable = :available)
           AND (:minLat IS NULL OR r.latitude BETWEEN :minLat AND :maxLat)
           AND (:minLng IS NULL OR r.longitude BETWEEN :minLng AND :maxLng)
+        ORDER BY r.createdAt DESC
     """)
     Page<Room> search(
         @Param("city") String city,

@@ -23,3 +23,9 @@ frontend/dist/
 # Logs & uploads
 *.log
 uploads/
+
+# H2 local database
+backend/data/
+
+# Package lock (regenerated on install)
+frontend/package-lock.json

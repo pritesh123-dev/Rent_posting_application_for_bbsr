@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
-  timeout: 15000,
+  timeout: 30000,
 });
 
 api.interceptors.request.use((cfg) => {
@@ -10,6 +10,14 @@ api.interceptors.request.use((cfg) => {
   if (token) cfg.headers.Authorization = `Bearer ${token}`;
   return cfg;
 });
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const msg = err.response?.data?.message || err.message || 'Network error';
+    return Promise.reject(new Error(msg));
+  },
+);
 
 export interface Room {
   id: string;
@@ -39,14 +47,22 @@ export interface RoomRequest {
 }
 
 export const roomApi = {
-  create: (body: RoomRequest) => api.post('/rooms', body).then((r) => r.data.data as Room),
+  create: (body: RoomRequest) =>
+    api.post('/rooms', body).then((r) => r.data.data as Room),
+
   list: (params: Record<string, any>) =>
     api.get('/rooms', { params }).then((r) => r.data.data),
-  nearby: (lat: number, lng: number, radiusKm = 5, filters: Record<string, any> = {}) =>
+
+  nearby: (lat: number, lng: number, radiusKm = 10, filters: Record<string, any> = {}) =>
     api.get('/rooms/nearby', { params: { lat, lng, radiusKm, ...filters } })
        .then((r) => r.data.data as Room[]),
-  get: (id: string) => api.get(`/rooms/${id}`).then((r) => r.data.data as Room),
+
+  get: (id: string) =>
+    api.get(`/rooms/${id}`).then((r) => r.data.data as Room),
+
   updateAvailability: (id: string, isAvailable: boolean) =>
     api.patch(`/rooms/${id}/availability`, { isAvailable }).then((r) => r.data.data as Room),
-  stats: () => api.get('/rooms/stats').then((r) => r.data.data),
+
+  stats: () =>
+    api.get('/rooms/stats').then((r) => r.data.data),
 };
