@@ -26,15 +26,15 @@ export default function FindRoomPage() {
 
   const locate = useCallback(() => {
     if (!navigator.geolocation) {
-      toast.error('Geolocation not supported — showing all rooms');
+      toast.error('Geolocation not supported');
       setTab('all');
       return;
     }
-    toast.loading('Locating you…', { id: 'loc' });
+    toast.loading('Finding your location...', { id: 'loc' });
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        toast.success('Location found!', { id: 'loc' });
+        toast.success('Location found', { id: 'loc' });
         setTab('nearby');
       },
       () => {
@@ -45,7 +45,6 @@ export default function FindRoomPage() {
     );
   }, []);
 
-  // Fetch all rooms on mount (always works regardless of geolocation)
   useEffect(() => {
     dispatch(fetchAllRooms({
       city: cityFilter || undefined,
@@ -56,7 +55,6 @@ export default function FindRoomPage() {
     }));
   }, [cityFilter, minRent, maxRent, onlyAvailable, dispatch]);
 
-  // Fetch nearby when location is available and tab is nearby
   useEffect(() => {
     if (!coords || tab !== 'nearby') return;
     dispatch(fetchNearby({
@@ -67,144 +65,146 @@ export default function FindRoomPage() {
   }, [coords, radius, maxRent, onlyAvailable, tab, dispatch]);
 
   const rooms = tab === 'nearby' ? nearby : allRooms;
-
-  // Client-side filter for min rent and city on nearby results
   const filtered = rooms.filter((r) =>
     (!minRent || r.rent >= +minRent) &&
     (!cityFilter || r.city.toLowerCase().includes(cityFilter.toLowerCase()))
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-      {/* Sidebar */}
-      <aside className="card p-5 h-fit lg:sticky lg:top-20 space-y-4">
-        <h2 className="font-bold text-lg">Filters</h2>
-
-        <div>
-          <label className="block text-sm mb-1">City</label>
-          <input className="input" placeholder="e.g. Bhubaneswar" value={cityFilter}
-                 onChange={(e) => setCityFilter(e.target.value)} />
-        </div>
-
-        {tab === 'nearby' && (
-          <div>
-            <label className="block text-sm mb-1">
-              Radius: <span className="font-semibold">{radius} km</span>
-            </label>
-            <input type="range" min={1} max={50} value={radius}
-                   onChange={(e) => setRadius(+e.target.value)}
-                   className="w-full accent-brand-500" />
-          </div>
-        )}
-
-        <div>
-          <label className="block text-sm mb-1">Min Rent (₹)</label>
-          <input type="number" value={minRent} onChange={(e) => setMinRent(e.target.value)}
-                 className="input" placeholder="0" />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Max Rent (₹)</label>
-          <input type="number" value={maxRent} onChange={(e) => setMaxRent(e.target.value)}
-                 className="input" placeholder="No limit" />
-        </div>
-
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={onlyAvailable} className="accent-brand-500"
-                 onChange={(e) => setOnlyAvailable(e.target.checked)} />
-          <span className="text-sm">Only available</span>
-        </label>
-
-        <button onClick={locate} className="btn-primary w-full py-2">
-          📍 {coords ? 'Re-locate' : 'Use my location'}
-        </button>
-      </aside>
-
-      {/* Main content */}
+    <div className="space-y-5">
+      {/* Header */}
       <div>
-        {/* Tabs + View toggle */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-          <div className="flex gap-1 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg p-1">
-            <button onClick={() => setTab('all')}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
-                      tab === 'all' ? 'bg-brand-500 text-white' : ''}`}>
-              🏘️ All Rooms
-            </button>
-            <button onClick={() => { if (coords) setTab('nearby'); else locate(); }}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
-                      tab === 'nearby' ? 'bg-brand-500 text-white' : ''}`}>
-              📍 Near Me
-            </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">
-              {loading ? 'Searching…' : `${filtered.length} rooms`}
-            </span>
-            <div className="flex gap-1 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg p-1">
-              <button onClick={() => setView('grid')}
-                      className={`px-3 py-1 rounded-md text-sm ${view === 'grid' ? 'bg-brand-500 text-white' : ''}`}>
-                ▦ Grid
-              </button>
-              <button onClick={() => setView('map')}
-                      className={`px-3 py-1 rounded-md text-sm ${view === 'map' ? 'bg-brand-500 text-white' : ''}`}>
-                🗺️ Map
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Error state */}
-        {error && (
-          <div className="card p-4 mb-4 border-red-200 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
-            ⚠️ {error}
-          </div>
-        )}
-
-        {/* Loading skeletons */}
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="card overflow-hidden">
-                <div className="skeleton h-44 w-full" />
-                <div className="p-4 space-y-2">
-                  <div className="skeleton h-5 w-3/4" />
-                  <div className="skeleton h-4 w-1/2" />
-                  <div className="skeleton h-10 w-full mt-3" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!loading && filtered.length === 0 && (
-          <div className="card p-10 text-center">
-            <div className="text-4xl mb-3">🏠</div>
-            <h3 className="font-semibold text-lg mb-1">No rooms found</h3>
-            <p className="text-gray-500 text-sm mb-4">
-              {tab === 'nearby'
-                ? `No rooms within ${radius} km. Try increasing the radius or switch to "All Rooms".`
-                : 'Try adjusting your filters or post the first room!'}
-            </p>
-            {tab === 'nearby' && (
-              <button onClick={() => setTab('all')} className="btn-primary px-4 py-2">
-                Show all rooms
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Grid view */}
-        {!loading && view === 'grid' && filtered.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((r) => <RoomCard key={r.id} room={r} />)}
-          </div>
-        )}
-
-        {/* Map view */}
-        {!loading && view === 'map' && filtered.length > 0 && (
-          <MapView rooms={filtered} center={coords} />
-        )}
+        <h1 className="text-2xl font-extrabold">Find rooms</h1>
+        <p className="text-muted text-sm mt-1">
+          {loading ? 'Searching...' : `${filtered.length} rooms available`}
+        </p>
       </div>
+
+      {/* Filters bar */}
+      <div className="card p-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[180px]">
+            <label className="text-xs font-semibold text-muted mb-1 block">City / Area</label>
+            <input className="input" placeholder="e.g. Patia, KIIT..." value={cityFilter}
+                   onChange={(e) => setCityFilter(e.target.value)} />
+          </div>
+          {tab === 'nearby' && (
+            <div className="w-32">
+              <label className="text-xs font-semibold text-muted mb-1 block">Radius: {radius} km</label>
+              <input type="range" min={1} max={50} value={radius}
+                     onChange={(e) => setRadius(+e.target.value)}
+                     className="w-full accent-accent" />
+            </div>
+          )}
+          <div className="w-28">
+            <label className="text-xs font-semibold text-muted mb-1 block">Min ₹</label>
+            <input type="number" value={minRent} onChange={(e) => setMinRent(e.target.value)}
+                   className="input" placeholder="0" />
+          </div>
+          <div className="w-28">
+            <label className="text-xs font-semibold text-muted mb-1 block">Max ₹</label>
+            <input type="number" value={maxRent} onChange={(e) => setMaxRent(e.target.value)}
+                   className="input" placeholder="Any" />
+          </div>
+          <label className="flex items-center gap-2 pb-1 cursor-pointer">
+            <input type="checkbox" checked={onlyAvailable} className="w-4 h-4 accent-accent rounded"
+                   onChange={(e) => setOnlyAvailable(e.target.checked)} />
+            <span className="text-sm font-medium">Available</span>
+          </label>
+          <button onClick={locate} className="btn-accent px-4 py-3 text-sm">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+              <circle cx="12" cy="11" r="3" />
+            </svg>
+            {coords ? 'Re-locate' : 'Locate me'}
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs + View toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex bg-bg-alt rounded-2xl p-1 gap-1">
+          <TabBtn active={tab === 'all'} onClick={() => setTab('all')}>All rooms</TabBtn>
+          <TabBtn active={tab === 'nearby'} onClick={() => { if (coords) setTab('nearby'); else locate(); }}>Near me</TabBtn>
+        </div>
+        <div className="flex bg-bg-alt rounded-2xl p-1 gap-1">
+          <TabBtn active={view === 'grid'} onClick={() => setView('grid')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zm-9 9h7v7H4v-7zm9 0h7v7h-7v-7z"/></svg>
+            Grid
+          </TabBtn>
+          <TabBtn active={view === 'map'} onClick={() => setView('map')}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+            Map
+          </TabBtn>
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="card p-4 border border-red-200 bg-red-50 text-red-600 text-sm font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="card overflow-hidden">
+              <div className="skeleton h-52 w-full rounded-none" />
+              <div className="p-5 space-y-3">
+                <div className="skeleton h-6 w-1/3" />
+                <div className="skeleton h-4 w-2/3" />
+                <div className="skeleton h-4 w-1/2" />
+                <div className="skeleton h-10 w-full mt-2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty */}
+      {!loading && filtered.length === 0 && (
+        <div className="card p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-bg-alt flex items-center justify-center mx-auto mb-4">
+            <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#9CA3AF" strokeWidth="1.5">
+              <path strokeLinecap="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h3 className="font-bold text-lg mb-1">No rooms found</h3>
+          <p className="text-muted text-sm mb-5">
+            {tab === 'nearby' ? 'Try a wider radius or switch to "All rooms".' : 'Adjust your filters.'}
+          </p>
+          {tab === 'nearby' && (
+            <button onClick={() => setTab('all')} className="btn-outline px-5 py-2.5 text-sm">
+              Show all rooms
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Grid */}
+      {!loading && view === 'grid' && filtered.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((r) => <RoomCard key={r.id} room={r} />)}
+        </div>
+      )}
+
+      {/* Map */}
+      {!loading && view === 'map' && filtered.length > 0 && (
+        <MapView rooms={filtered} center={coords} />
+      )}
     </div>
+  );
+}
+
+function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+              active ? 'bg-surface text-primary shadow-card' : 'text-muted hover:text-primary'
+            }`}>
+      {children}
+    </button>
   );
 }
